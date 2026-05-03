@@ -9,6 +9,7 @@ import {
 
 interface StreamEvent {
   type: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any;
   timestamp: number;
 }
@@ -169,8 +170,9 @@ export default function EventStreamViewer({ threadId }: EventStreamViewerProps) 
                 )}
                 {ev.type === "plan_ready" && (
                   <div className="mt-1">
-                    <p className="text-zinc-300 mb-2 italic">"{ev.data.reasoning}"</p>
+                    <p className="text-zinc-300 mb-2 italic">&quot;{ev.data.reasoning}&quot;</p>
                     <ul className="space-y-1">
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       {ev.data.steps.map((s: any, i: number) => (
                         <li key={i} className="flex gap-2 items-start">
                           <span className="text-blue-400 shrink-0">[{s.specialist}]</span> 
