@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-This is a agent-orchestration-system project!
-=======
 # Agent Orchestration System (Sentinal)
 
 [![Tech Stack](https://img.shields.io/badge/Stack-Python%20|%20Next.js%20|%20LangGraph-blue)](#)
@@ -66,4 +63,3 @@ The system follows a **Supervisor-Specialist** pattern orchestrated by a **LangG
 
 ## 📊 Observability
 Every agent decision, tool call, and state transition is traced using **OpenTelemetry**. You can visualize the execution flow directly in the dashboard's "Execution Trace" section.
->>>>>>> Stashed changes
