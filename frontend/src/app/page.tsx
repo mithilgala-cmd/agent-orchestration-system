@@ -43,14 +43,14 @@ export default function Home() {
             
             <div className="space-y-3">
               {[
-                { name: "Supervisor", desc: "Task decomposition & routing", color: "blue" },
-                { name: "Research Agent", desc: "Web search & info gathering", color: "purple" },
-                { name: "Coder Agent", desc: "Python REPL execution", color: "cyan" },
-                { name: "Writer Agent", desc: "File editing & formatting", color: "emerald" },
-                { name: "Reviewer Agent", desc: "Output validation & HITL", color: "amber" }
+                { name: "Supervisor", desc: "Task decomposition & routing", colorClass: "bg-blue-500 shadow-blue-500/50" },
+                { name: "Research Agent", desc: "Web search & info gathering", colorClass: "bg-purple-500 shadow-purple-500/50" },
+                { name: "Coder Agent", desc: "Python REPL execution", colorClass: "bg-cyan-500 shadow-cyan-500/50" },
+                { name: "Writer Agent", desc: "File editing & formatting", colorClass: "bg-emerald-500 shadow-emerald-500/50" },
+                { name: "Reviewer Agent", desc: "Output validation & HITL", colorClass: "bg-amber-500 shadow-amber-500/50" }
               ].map((agent, i) => (
                 <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors group">
-                  <div className={`w-2 h-2 rounded-full bg-${agent.color}-500 shadow-[0_0_8px_currentColor] opacity-50 group-hover:opacity-100 transition-opacity`} />
+                  <div className={`w-2 h-2 rounded-full ${agent.colorClass} shadow-lg opacity-50 group-hover:opacity-100 transition-opacity`} />
                   <div>
                     <div className="text-xs font-semibold text-zinc-300">{agent.name}</div>
                     <div className="text-[10px] text-zinc-500">{agent.desc}</div>
@@ -58,6 +58,17 @@ export default function Home() {
                 </div>
               ))}
             </div>
+            
+            {currentThread && (
+              <div className="mt-6 pt-4 border-t border-zinc-800">
+                <button 
+                  onClick={() => setCurrentThread(null)}
+                  className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-300 text-xs font-medium rounded-lg border border-zinc-800 transition-colors"
+                >
+                  Clear Active Task
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
