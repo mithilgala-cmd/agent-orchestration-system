@@ -24,6 +24,7 @@ def _get_app():
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
+# Represents the core request structure for initializing an agentic task
 class TaskRequest(BaseModel):
     task: str
 
