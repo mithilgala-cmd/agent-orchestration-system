@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Agent Orchestrator Dashboard
 
-## Getting Started
+This directory contains the **Next.js** frontend dashboard for the Multi-Agent Orchestration System. It serves as the primary interface for monitoring agent activities, observing execution traces, and providing Human-in-the-Loop (HITL) approvals.
 
-First, run the development server:
+## ✨ Key Capabilities
+
+- **Real-Time Event Streaming**: Connects to the FastAPI backend via Server-Sent Events (SSE) to display a live feed of agent reasoning, tool usage, and state transitions.
+- **Human-in-the-Loop (HITL)**: Specialized UI components that intercept workflow execution when a sensitive action (like running code) requires manual approval.
+- **Trace Explorer**: A dedicated observability tab that fetches and visualizes historical task execution data from the SQLite metrics database, displaying token consumption, estimated costs, and run durations.
+- **Premium Aesthetics**: Built with a sleek, dark-mode glassmorphic design utilizing Tailwind CSS, Lucide React icons, and subtle micro-animations for an enterprise-grade feel.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Data Fetching**: Native Fetch & Server-Sent Events (`EventSource`)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+
+- The Python Backend must be running on `http://127.0.0.1:8000`
+
+### Installation
+
+Install the project dependencies:
+
+```bash
+npm install
+```
+
+### Running the Development Server
+
+Start the application:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📂 Directory Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/app/page.tsx`: The main application entry point, containing the tabbed navigation layout.
+- `src/app/globals.css`: Global styles including custom glassmorphic utility classes and animations.
+- `src/components/TaskRunner.tsx`: The input form for dispatching new orchestration tasks to the backend.
+- `src/components/EventStreamViewer.tsx`: The real-time console rendering the live SSE event feed from the active agent run.
+- `src/components/TraceExplorer.tsx`: The historical observability dashboard visualizing past runs.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Design Philosophy
+The UI follows strict modern web design principles:
+- **No pure blacks or whites**: Backgrounds use deep zinc/slate tones (`#09090b`), and text uses varied opacities for depth.
+- **Subtle borders**: 1px borders with low opacity (`border-white/10`) to separate sections without harsh lines.
+- **Semantic colors**: Clear visual hierarchy for agent identities (e.g., Blue for Supervisor, Purple for Researcher, Cyan for Coder).
