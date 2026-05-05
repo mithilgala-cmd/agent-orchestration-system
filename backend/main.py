@@ -59,9 +59,28 @@ def _run_specialist(state: AgentState, agent, node_name: str, icon: str) -> dict
     tid = state.get("thread_id", "")
     _emit(state, "node_start", {"node": node_name, "icon": icon, "message": f"{node_name} starting work..."})
 
+    import time
+    start_time = time.time()
+    
     with AgentTracer.start_span(node_name.lower().replace(" ", "_")) as span:
         AgentTracer.log_decision(span, node_name, "running")
         result = agent.invoke({"messages": state["messages"]})
+        
+    duration = time.time() - start_time
+
+    # Initialize metrics if not present
+    metrics = state.get("metrics", {})
+    metrics["total_tokens"] = metrics.get("total_tokens", 0)
+    metrics["prompt_tokens"] = metrics.get("prompt_tokens", 0)
+    metrics["completion_tokens"] = metrics.get("completion_tokens", 0)
+    metrics["duration"] = metrics.get("duration", 0.0) + duration
+
+    # Extract token usage from final message
+    if result["messages"] and hasattr(result["messages"][-1], "response_metadata"):
+        usage = result["messages"][-1].response_metadata.get("token_usage", {})
+        metrics["total_tokens"] += usage.get("total_tokens", 0)
+        metrics["prompt_tokens"] += usage.get("prompt_tokens", 0)
+        metrics["completion_tokens"] += usage.get("completion_tokens", 0)
 
     # Collect tool calls for observability
     for msg in result["messages"]:
@@ -76,7 +95,7 @@ def _run_specialist(state: AgentState, agent, node_name: str, icon: str) -> dict
     last_content = result["messages"][-1].content if result["messages"] else ""
     _emit(state, "node_finish", {"node": node_name, "result": last_content[:500]})
 
-    return {"messages": result["messages"], "next_step": "review"}
+    return {"messages": result["messages"], "next_step": "review", "metrics": metrics}
 
 
 def research_node(state: AgentState):

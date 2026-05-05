@@ -3,10 +3,12 @@
 import { useState } from "react";
 import TaskRunner from "@/components/TaskRunner";
 import EventStreamViewer from "@/components/EventStreamViewer";
-import { Bot, Network } from "lucide-react";
+import { TraceExplorer } from "@/components/TraceExplorer";
+import { Bot, Network, LayoutDashboard, History } from "lucide-react";
 
 export default function Home() {
   const [currentThread, setCurrentThread] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"live" | "history">("live");
 
   return (
     <main className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-blue-500/30">
@@ -22,6 +24,27 @@ export default function Home() {
             </div>
           </div>
           
+          <div className="flex bg-zinc-900/50 p-1 rounded-lg border border-white/5">
+            <button
+              onClick={() => setActiveTab("live")}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === "live" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              Live Run
+            </button>
+            <button
+              onClick={() => setActiveTab("history")}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === "history" ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-400 hover:text-zinc-200"
+              }`}
+            >
+              <History className="w-3.5 h-3.5" />
+              Trace History
+            </button>
+          </div>
+
           <div className="flex items-center gap-2 text-xs font-medium text-zinc-400 bg-zinc-900/50 px-3 py-1.5 rounded-full border border-white/5">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
             System Online
@@ -30,10 +53,12 @@ export default function Home() {
       </header>
 
       <div className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-1/3 flex flex-col gap-6">
-          <TaskRunner 
-            onTaskStarted={(threadId) => setCurrentThread(threadId)} 
-          />
+        {activeTab === "live" ? (
+          <>
+            <div className="w-full md:w-1/3 flex flex-col gap-6">
+              <TaskRunner 
+                onTaskStarted={(threadId) => setCurrentThread(threadId)} 
+              />
           
           <div className="glass-panel rounded-xl p-5 border-zinc-800 flex-1">
             <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
@@ -71,10 +96,15 @@ export default function Home() {
             )}
           </div>
         </div>
-
         <div className="w-full md:w-2/3 flex flex-col">
           <EventStreamViewer threadId={currentThread} />
         </div>
+      </>
+      ) : (
+        <div className="w-full">
+          <TraceExplorer />
+        </div>
+      )}
       </div>
     </main>
   );

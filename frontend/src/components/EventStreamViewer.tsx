@@ -25,12 +25,16 @@ export default function EventStreamViewer({ threadId }: EventStreamViewerProps) 
 
   useEffect(() => {
     if (!threadId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEvents([]);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus("idle");
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEvents([]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStatus("running");
 
     const eventSource = new EventSource(`http://127.0.0.1:8000/tasks/${threadId}/stream`);

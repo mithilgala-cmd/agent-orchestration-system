@@ -18,3 +18,5 @@ class AgentState(TypedDict):
     final_output: str
     # Thread ID for event bus routing
     thread_id: str
+    # Metrics for trace logging
+    metrics: dict

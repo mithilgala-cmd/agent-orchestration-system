@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
 from stream import event_bus
+import db
 
 logger = logging.getLogger(__name__)
 
@@ -62,13 +63,18 @@ def _run_graph(thread_id: str, task: str):
 
         # Check if we stopped at an interrupt
         state = agent_app.get_state(config)
+        metrics = state.values.get("metrics", {}) if state.values else {}
+        
         if state.next and "human_review" in state.next:
             # Already emitted awaiting_approval inside the node — just return
+            db.save_trace(thread_id, task, "paused", metrics)
             pass
         else:
+            db.save_trace(thread_id, task, "completed", metrics)
             event_bus.emit(thread_id, "finished", {"message": "Task completed successfully."})
     except Exception as e:
         logger.error(f"Graph error for {thread_id}: {e}")
+        db.save_trace(thread_id, task, "error", {})
         event_bus.emit(thread_id, "error", {"message": str(e)})
     finally:
         event_bus.emit_sentinel(thread_id)
@@ -140,12 +146,29 @@ async def reject_task(thread_id: str):
     return {"status": "rejected"}
 
 
+@api.get("/traces")
+async def get_all_traces():
+    """Returns a list of all historical traces for the Trace Explorer UI."""
+    return {"traces": db.get_traces()}
+
+
 def _resume_graph(thread_id: str, config: dict, agent_app):
+    task = "Resumed Task"
     try:
+        # Fetch the current state to get original task name if needed (optional)
+        state = agent_app.get_state(config)
+        if state and state.values and state.values.get("messages"):
+            task = state.values["messages"][0].content
+
         for chunk in agent_app.stream(None, config=config):
             pass
+            
+        final_state = agent_app.get_state(config)
+        metrics = final_state.values.get("metrics", {}) if final_state.values else {}
+        db.save_trace(thread_id, task, "completed", metrics)
         event_bus.emit(thread_id, "finished", {"message": "Task completed after human approval."})
     except Exception as e:
+        db.save_trace(thread_id, task, "error", {})
         event_bus.emit(thread_id, "error", {"message": str(e)})
     finally:
         event_bus.emit_sentinel(thread_id)
