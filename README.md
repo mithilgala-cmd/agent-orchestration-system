@@ -18,7 +18,7 @@
 
 ## 🌟 Overview
 
-The **Multi-Agent Orchestration System (Sentinal)** is a production-grade AI platform designed to break down complex tasks, delegate execution to specialized LLM-powered agents, and maintain persistent memory across sessions. It features a modern Human-in-the-Loop (HITL) interface for secure execution and an integrated observability layer for auditing agent reasoning and costs.
+The **Multi-Agent Orchestration System (Sentinal)** is a portfolio project and a production-grade AI platform designed to break down complex tasks, delegate execution to specialized LLM-powered agents, and maintain persistent memory across sessions. It features a modern Human-in-the-Loop (HITL) interface for secure execution and an integrated observability layer for auditing agent reasoning and costs.
 
 This project was built to demonstrate advanced AI engineering patterns, scalable backend system design, and premium frontend UI development.
 
