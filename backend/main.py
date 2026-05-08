@@ -177,10 +177,11 @@ app = workflow.compile(checkpointer=memory, interrupt_before=["human_review"])
 
 
 if __name__ == "__main__":
+    logger.info("Starting test workflow run — thread_id=test-1")
     config = {"configurable": {"thread_id": "test-1"}}
     inputs = {
         "messages": [HumanMessage(content="What is the capital of France? Answer briefly.")],
         "thread_id": "test-1",
     }
     for output in app.stream(inputs, config=config):
-        print(output)
+        logger.info("Graph output: %s", output)

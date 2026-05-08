@@ -1,55 +1,114 @@
-# Agent Orchestrator Dashboard
+# Agent Orchestrator — Frontend Dashboard
 
-This directory contains the **Next.js** frontend dashboard for the Multi-Agent Orchestration System. It serves as the primary interface for monitoring agent activities, observing execution traces, and providing Human-in-the-Loop (HITL) approvals.
+This directory contains the **Next.js 16** frontend for the Multi-Agent Orchestration System. It is the primary operator interface for dispatching tasks, watching live agent execution, issuing Human-in-the-Loop approvals, and reviewing historical trace data.
+
+---
 
 ## ✨ Key Capabilities
 
-- **Real-Time Event Streaming**: Connects to the FastAPI backend via Server-Sent Events (SSE) to display a live feed of agent reasoning, tool usage, and state transitions.
-- **Human-in-the-Loop (HITL)**: Specialized UI components that intercept workflow execution when a sensitive action (like running code) requires manual approval.
-- **Trace Explorer**: A dedicated observability tab that fetches and visualizes historical task execution data from the SQLite metrics database, displaying token consumption, estimated costs, and run durations.
-- **Premium Aesthetics**: Built with a sleek, dark-mode glassmorphic design utilizing Tailwind CSS, Lucide React icons, and subtle micro-animations for an enterprise-grade feel.
+### 📡 Real-Time Event Streaming
+Connects to the FastAPI backend via the browser's native `EventSource` API (Server-Sent Events). Every agent event — node start/finish, tool calls, plan steps, HITL alerts — is rendered live without polling.
+
+### 🛡️ Human-in-the-Loop (HITL) Controls
+When the backend graph pauses at the `human_review` interrupt node, the `EventStreamViewer` surfaces a full-width approval card with **Approve** and **Reject** buttons. Approving sends a `POST /tasks/{thread_id}/approve` to resume the workflow; rejection gracefully closes the event channel.
+
+### 📊 Trace Explorer
+The **Trace History** tab fetches all completed task records from `GET /traces` and renders them in a structured table showing thread ID, task summary, status badge, token count, estimated LLM cost, and wall-clock duration.
+
+### 🎨 Premium Glassmorphic Design
+- **Dark-mode first**: All backgrounds use deep zinc/slate tones (`#09090b` base) with layered `bg-black/40` overlays.
+- **Glassmorphism**: Panels use `backdrop-blur-md` + `border-white/5` for a premium frosted-glass effect.
+- **Semantic color coding**: Each agent has a distinct identity color (Blue → Supervisor, Purple → Research, Cyan → Coder, Emerald → Writer, Amber → Reviewer).
+- **Micro-animations**: Framer Motion powers the live agent pipeline visualization; Tailwind CSS `animate-pulse` / `animate-spin` provide heartbeat and loading indicators.
+
+---
+
+## 📂 Directory Structure
+
+```
+src/
+├── app/
+│   ├── page.tsx          # Root page — tabbed layout (Live Run / Trace History)
+│   ├── layout.tsx        # Root layout with font and metadata
+│   └── globals.css       # Global styles, CSS variables, glassmorphic utilities
+└── components/
+    ├── TaskRunner.tsx        # Input form for dispatching new tasks
+    ├── EventStreamViewer.tsx # Live SSE console with HITL approve/reject UI
+    ├── AgentPipeline.tsx     # Animated pipeline visualization of the execution plan
+    ├── TraceExplorer.tsx     # Historical observability dashboard
+    └── TraceLog.tsx          # Individual trace record card component
+```
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 14](https://nextjs.org/) (App Router)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Data Fetching**: Native Fetch & Server-Sent Events (`EventSource`)
+| Technology | Version | Role |
+|---|---|---|
+| Next.js | 16 (App Router) | Framework, routing, SSR |
+| React | 19 | UI component library |
+| Tailwind CSS | v4 | Utility-first styling |
+| Framer Motion | 12 | Pipeline and transition animations |
+| Lucide React | Latest | Icon system |
+| TypeScript | 5 | Type safety |
+| clsx / tailwind-merge | Latest | Conditional class name utilities |
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- The Python Backend must be running on `http://127.0.0.1:8000`
+- **Node.js 18+**
+- The Python backend must be running on `http://127.0.0.1:8000`
 
 ### Installation
-
-Install the project dependencies:
 
 ```bash
 npm install
 ```
 
-### Running the Development Server
-
-Start the application:
+### Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the dashboard.
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
-## 📂 Directory Structure
+### Linting
 
-- `src/app/page.tsx`: The main application entry point, containing the tabbed navigation layout.
-- `src/app/globals.css`: Global styles including custom glassmorphic utility classes and animations.
-- `src/components/TaskRunner.tsx`: The input form for dispatching new orchestration tasks to the backend.
-- `src/components/EventStreamViewer.tsx`: The real-time console rendering the live SSE event feed from the active agent run.
-- `src/components/TraceExplorer.tsx`: The historical observability dashboard visualizing past runs.
+```bash
+npm run lint
+```
 
-## 🎨 Design Philosophy
-The UI follows strict modern web design principles:
-- **No pure blacks or whites**: Backgrounds use deep zinc/slate tones (`#09090b`), and text uses varied opacities for depth.
-- **Subtle borders**: 1px borders with low opacity (`border-white/10`) to separate sections without harsh lines.
-- **Semantic colors**: Clear visual hierarchy for agent identities (e.g., Blue for Supervisor, Purple for Researcher, Cyan for Coder).
+---
+
+## 🔗 Backend API Integration
+
+The frontend communicates with these backend endpoints:
+
+| Method | Endpoint | Used By |
+|---|---|---|
+| `POST` | `/tasks` | `TaskRunner` — starts a new agent workflow |
+| `GET` | `/tasks/{thread_id}/stream` | `EventStreamViewer` — SSE live event feed |
+| `POST` | `/tasks/{thread_id}/approve` | `EventStreamViewer` — HITL approval button |
+| `POST` | `/tasks/{thread_id}/reject` | `EventStreamViewer` — HITL reject button |
+| `GET` | `/traces` | `TraceExplorer` — historical trace records |
+
+---
+
+## 🎨 Design System
+
+The UI uses CSS custom properties defined in `globals.css` for consistent theming:
+
+| Variable | Value | Usage |
+|---|---|---|
+| `--background` | `#09090b` | Page background |
+| `--surface` | `rgba(255,255,255,0.03)` | Glass panel fills |
+| `--border` | `rgba(255,255,255,0.07)` | Subtle panel borders |
+| `--blue` | `#3b82f6` | Supervisor identity |
+| `--purple` | `#a855f7` | Research Agent identity |
+| `--cyan` | `#06b6d4` | Coder Agent identity |
+| `--green` | `#10b981` | Writer Agent / success states |
+| `--yellow` | `#f59e0b` | Reviewer Agent identity |
+| `--red` | `#ef4444` | Human Review / error states |

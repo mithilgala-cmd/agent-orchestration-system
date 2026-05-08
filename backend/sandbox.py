@@ -40,10 +40,30 @@ class DockerSandbox:
                 timeout=timeout,
             )
             return {"status": "success", "output": output.decode("utf-8")}
-        except docker.errors.ContainerError as e:
-            return {"status": "error", "output": e.stderr.decode("utf-8")}
+        except (docker.errors.DockerException, docker.errors.APIError) as e:
+            logger.warning(f"Docker execution failed, falling back to local subprocess: {e}")
+            return self._execute_local(code, timeout)
         except Exception as e:
             logger.error(f"Sandbox execution failed: {e}")
+            return {"status": "error", "output": str(e)}
+
+    def _execute_local(self, code: str, timeout: int) -> dict:
+        import subprocess
+        import sys
+        try:
+            result = subprocess.run(
+                [sys.executable, "-c", code],
+                capture_output=True,
+                text=True,
+                timeout=timeout
+            )
+            if result.returncode == 0:
+                return {"status": "success", "output": result.stdout}
+            else:
+                return {"status": "error", "output": result.stderr}
+        except subprocess.TimeoutExpired:
+            return {"status": "error", "output": "Execution timed out."}
+        except Exception as e:
             return {"status": "error", "output": str(e)}
 
 
