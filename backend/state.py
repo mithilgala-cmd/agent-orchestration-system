@@ -10,6 +10,8 @@ class AgentState(TypedDict):
     next_step: str
     # Results from specialists
     results: dict
+    # Current step index in the execution plan
+    current_step_index: int
     # Current agent confidence (0-1)
     agent_confidence: float
     # Any human feedback or approval status

@@ -83,7 +83,8 @@ def _run_specialist(state: AgentState, agent, node_name: str, icon: str) -> dict
         metrics["completion_tokens"] += usage.get("completion_tokens", 0)
 
     # Collect tool calls for observability
-    for msg in result["messages"]:
+    new_messages = result["messages"][len(state["messages"]):]
+    for msg in new_messages:
         if hasattr(msg, "tool_calls") and msg.tool_calls:
             for tc in msg.tool_calls:
                 _emit(state, "tool_call", {
@@ -112,13 +113,22 @@ def writer_node(state: AgentState):
 
 def reviewer_node(state: AgentState):
     _emit(state, "node_start", {"node": "Reviewer", "message": "Validating outputs..."})
-    confidence = state.get("agent_confidence", 1.0)
-    if confidence < 0.7:
-        _emit(state, "awaiting_approval", {
-            "node": "Reviewer",
-            "message": "Confidence below threshold. Escalating to human review.",
-        })
-        return {"next_step": "human_review"}
+    
+    updates = {}
+    
+    # Skip confidence check if human already approved
+    if state.get("human_approval") == "approved":
+        _emit(state, "node_start", {"node": "Reviewer", "message": "Human approval received. Proceeding..."})
+        # Reset for next possible step
+        updates["human_approval"] = None
+    else:
+        confidence = state.get("agent_confidence", 1.0)
+        if confidence < 0.7:
+            _emit(state, "awaiting_approval", {
+                "node": "Reviewer",
+                "message": "Confidence below threshold. Escalating to human review.",
+            })
+            return {"next_step": "human_review"}
 
     # Save completed task to long-term memory
     messages = state.get("messages", [])
@@ -128,7 +138,24 @@ def reviewer_node(state: AgentState):
         ltm.save_memory(task_text, result_text)
 
     _emit(state, "node_finish", {"node": "Reviewer", "result": "All outputs validated."})
-    return {"next_step": "finish"}
+    
+    # Check if there are more steps in the plan
+    plan = state.get("results", {}).get("plan", {})
+    steps = plan.get("steps", [])
+    current_index = state.get("current_step_index", 0)
+
+    if current_index + 1 < len(steps):
+        next_index = current_index + 1
+        next_specialist = steps[next_index]["specialist"]
+        _emit(state, "node_finish", {"node": "Reviewer", "result": f"Step {current_index + 1}/{len(steps)} complete. Moving to {next_specialist}."})
+        updates.update({
+            "next_step": next_specialist,
+            "current_step_index": next_index
+        })
+        return updates
+
+    updates["next_step"] = "finish"
+    return updates
 
 
 def human_review_node(state: AgentState):
@@ -136,7 +163,7 @@ def human_review_node(state: AgentState):
         "node": "Human Review",
         "message": "Paused. Waiting for human approval to proceed.",
     })
-    return {"human_approval": "pending", "next_step": "finish"}
+    return {"human_approval": "approved", "next_step": "review"}
 
 
 # ── Routing ───────────────────────────────────────────────────────────────────
@@ -167,10 +194,13 @@ workflow.add_edge("research", "review")
 workflow.add_edge("coder",    "review")
 workflow.add_edge("writer",   "review")
 workflow.add_conditional_edges("review", route, {
+    "research":     "research",
+    "coder":        "coder",
+    "writer":       "writer",
     "human_review": "human_review",
     "finish":       END,
 })
-workflow.add_edge("human_review", END)
+workflow.add_edge("human_review", "review")
 
 memory = MemorySaver()
 app = workflow.compile(checkpointer=memory, interrupt_before=["human_review"])

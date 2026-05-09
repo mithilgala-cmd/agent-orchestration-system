@@ -58,5 +58,6 @@ class Supervisor:
         first_specialist = plan.steps[0].specialist if plan.steps else "finish"
         return {
             "next_step": first_specialist,
+            "current_step_index": 0,
             "results": {"plan": plan.model_dump()},
         }
