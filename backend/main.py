@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.prebuilt import create_react_agent
 
 from state import AgentState
@@ -202,7 +202,7 @@ workflow.add_conditional_edges("review", route, {
 })
 workflow.add_edge("human_review", "review")
 
-memory = MemorySaver()
+memory = SqliteSaver.from_conn_string("checkpoints.sqlite")
 app = workflow.compile(checkpointer=memory, interrupt_before=["human_review"])
 
 

@@ -44,5 +44,11 @@ A multi-agent orchestration platform where a supervisor agent decomposes complex
 
 ### Phase 4: Observability
 - [x] Tracing with OpenTelemetry.
-- [ ] Trace Explorer UI.
-- [ ] Performance & Cost tracking.
+- [x] Trace Explorer UI.
+- [x] Performance & Cost tracking.
+
+### Phase 5: Production Readiness
+- [x] Persistent state with `SqliteSaver`.
+- [x] Docker Compose orchestration.
+- [ ] Multi-tenant isolation.
+- [ ] Production-grade Redis checkpointer.
