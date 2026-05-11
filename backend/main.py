@@ -4,6 +4,7 @@ Each node emits events to the EventBus for SSE streaming.
 """
 import os
 import logging
+import time
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -26,6 +27,9 @@ logger = logging.getLogger(__name__)
 
 # ── LLMs ─────────────────────────────────────────────────────────────────────
 _groq_key = os.getenv("GROQ_API_KEY")
+if not _groq_key:
+    raise ValueError("GROQ_API_KEY not found in environment variables. Please check your .env file.")
+
 _base_llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0, api_key=_groq_key)
 
 # ── Specialist Agents (ReAct) ─────────────────────────────────────────────────
@@ -56,10 +60,10 @@ def supervisor_node(state: AgentState):
 
 
 def _run_specialist(state: AgentState, agent, node_name: str, icon: str) -> dict:
+    """Generic wrapper for running specialist agents with telemetry and event emission."""
     tid = state.get("thread_id", "")
     _emit(state, "node_start", {"node": node_name, "icon": icon, "message": f"{node_name} starting work..."})
 
-    import time
     start_time = time.time()
     
     with AgentTracer.start_span(node_name.lower().replace(" ", "_")) as span:
