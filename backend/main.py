@@ -21,16 +21,19 @@ from stream import event_bus
 from memory import ltm
 from observability import AgentTracer
 
+from utils import validate_environment, get_env_var
+
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ── LLMs ─────────────────────────────────────────────────────────────────────
-_groq_key = os.getenv("GROQ_API_KEY")
-if not _groq_key:
-    raise ValueError("GROQ_API_KEY not found in environment variables. Please check your .env file.")
+# Ensure required environment variables are set
+validate_environment()
 
+# ── LLMs ─────────────────────────────────────────────────────────────────────
+_groq_key = get_env_var("GROQ_API_KEY")
 _base_llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0, api_key=_groq_key)
+
 
 # ── Specialist Agents (ReAct) ─────────────────────────────────────────────────
 research_agent = create_react_agent(_base_llm, [web_search_tool])
