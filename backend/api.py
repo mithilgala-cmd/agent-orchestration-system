@@ -176,4 +176,11 @@ def _resume_graph(thread_id: str, config: dict, agent_app):
 
 @api.get("/health")
 async def health():
-    return {"status": "ok", "version": "2.0.0"}
+    """Health check with basic system metadata."""
+    return {
+        "status": "healthy",
+        "version": "2.1.0",
+        "engine": "LangGraph",
+        "features": ["sse", "wal_db", "sandboxing"]
+    }
+
